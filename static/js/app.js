@@ -857,13 +857,12 @@ function renderDocs() {
     <div class="feat-grid">
       ${feats.map(f=>`
         <div class="feat-card">
-          <div class="feat-num">FITUR ${f.n}</div>
           <div class="feat-icon">${f.ico}</div>
           <h4>${f.title}</h4>
-          <p>${f.desc}</p>
           <span class="feat-tag" style="background:${f.tagColor}22;color:${f.tagColor};">${f.tag}</span>
         </div>`).join('')}
     </div>
+    ${CU && CU.role === 'admin' ? `
     <div style="margin-top:18px;background:rgba(64,196,255,.06);border:1px solid rgba(64,196,255,.2);border-radius:var(--r-lg);padding:20px;" id="db-debug-panel">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
         <h4 style="font-size:14px;font-weight:700;color:var(--blue);">🔌 Panel Status Database</h4>
@@ -873,7 +872,7 @@ function renderDocs() {
         Klik tombol "Test Koneksi Sekarang" untuk memeriksa status database...
       </div>
       <div style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;" id="db-live-stats"></div>
-    </div>
+    </div>` : ''}
     `;
 }
 
