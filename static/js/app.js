@@ -840,20 +840,6 @@ function renderDocs() {
   ];
 
   document.getElementById('docs-content').innerHTML=`
-    <div style="background:linear-gradient(135deg,rgba(108,99,255,.13),rgba(0,212,255,.07));border:1px solid rgba(108,99,255,.2);border-radius:var(--r-lg);padding:22px;margin-bottom:28px;">
-      <h3 style="font-size:17px;font-weight:700;margin-bottom:8px;">🎓 Tentang Proyek</h3>
-      <p style="color:var(--text-2);font-size:13.5px;line-height:1.7;"><strong>EventTix</strong> adalah sistem informasi ticketing dan manajemen event berbasis web yang dikembangkan sebagai tugas akhir Mata Kuliah Pemrograman Web, Universitas AMIKOM Yogyakarta. Aplikasi ini mengimplementasikan konsep-konsep pemrograman web modern termasuk DOM manipulation, Local Storage API, event handling, modular JavaScript, dan responsive design.</p>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;">
-        <span class="badge b-ac">HTML5 Semantik</span>
-        <span class="badge b-ac">CSS3 + Custom Properties</span>
-        <span class="badge b-ac">Vanilla JavaScript ES6+</span>
-        <span class="badge b-ac">localStorage API</span>
-        <span class="badge b-ac">Responsive Design</span>
-        <span class="badge b-ac">CRUD Operations</span>
-        <span class="badge b-ac">Glassmorphism UI</span>
-      </div>
-    </div>
-    <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">8 Fitur Utama yang Diimplementasikan</h3>
     <div class="feat-grid">
       ${feats.map(f=>`
         <div class="feat-card">
