@@ -149,6 +149,17 @@ const fmtD  = d => d ? new Date(d).toLocaleDateString('id-ID',{day:'2-digit',mon
 const fmtDT = d => d ? new Date(d).toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '–';
 const fmtP  = p => (!p||p==0) ? 'GRATIS' : 'Rp '+Number(p).toLocaleString('id-ID');
 const getCat  = id => DB.get('kategori_event').find(c=>c.id===id) || {name:'Lainnya',icon:'📌',color:'#888'};
+// Palet warna default untuk kategori baru yang dibuat dari input teks bebas
+const CAT_COLORS = ['#6c63ff','#ff6b6b','#00e676','#ffab40','#40c4ff','#ea80fc','#ff5252','#26c6da'];
+// Cocokkan nama kategori (case-insensitive) dengan yang sudah ada; jika belum ada, buat baru.
+function resolveCatId(name) {
+  const cats=DB.get('kategori_event');
+  const found=cats.find(c=>c.name.toLowerCase()===name.toLowerCase());
+  if (found) return found.id;
+  const newCat={id:'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name,icon:'📌',color:CAT_COLORS[cats.length%CAT_COLORS.length]};
+  DB.set('kategori_event',[...cats,newCat]);
+  return newCat.id;
+}
 const getEv   = id => DB.get('events').find(e=>e.id===id);
 const getUser = id => DB.get('users').find(u=>u.id===id);
 const getTkByEv  = eid => DB.get('tiket').filter(t=>t.eventId===eid&&t.status!=='cancelled');
@@ -360,7 +371,8 @@ function fillCats() {
   const cats=DB.get('kategori_event');
   const opts=cats.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
   ['adm-cat','usr-cat'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">Semua Kategori</option>'+opts;});
-  const ec=document.getElementById('ev-cat');if(ec)ec.innerHTML=opts;
+  const ecl=document.getElementById('ev-cat-list');
+  if(ecl) ecl.innerHTML=cats.map(c=>`<option value="${c.name}">`).join('');
   const rs=document.getElementById('rpt-ev');
   if(rs) rs.innerHTML='<option value="">— Pilih Event —</option>'+DB.get('events').map(e=>`<option value="${e.id}">${e.icon||''} ${e.title}</option>`).join('');
 }
@@ -432,8 +444,7 @@ function renderAdmEvs() {
 
 function openEvModal(editId=null) {
   selIcon='💻';
-  const cats=DB.get('kategori_event');
-  document.getElementById('ev-cat').innerHTML=cats.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+  fillCats(); // refresh saran kategori (datalist) dari kategori yang sudah ada
   renderIpk();
   if (editId) {
     const e=getEv(editId); if(!e)return;
@@ -441,7 +452,7 @@ function openEvModal(editId=null) {
     document.getElementById('ev-id').value=e.id;
     document.getElementById('ev-title').value=e.title;
     document.getElementById('ev-desc').value=e.description||'';
-    document.getElementById('ev-cat').value=e.categoryId;
+    document.getElementById('ev-cat').value=getCat(e.categoryId).name;
     document.getElementById('ev-price').value=e.price||0;
     document.getElementById('ev-date').value=e.date;
     document.getElementById('ev-time').value=e.time;
@@ -451,7 +462,7 @@ function openEvModal(editId=null) {
   } else {
     document.getElementById('mo-ev-title').textContent='➕ Buat Event Baru';
     document.getElementById('ev-id').value='';
-    ['ev-title','ev-desc','ev-loc'].forEach(id=>document.getElementById(id).value='');
+    ['ev-title','ev-desc','ev-loc','ev-cat'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('ev-price').value='';
     document.getElementById('ev-cap').value='';
     document.getElementById('ev-date').value='';
@@ -462,7 +473,7 @@ function openEvModal(editId=null) {
 
 function saveEv() {
   const title=document.getElementById('ev-title').value.trim();
-  const catId=document.getElementById('ev-cat').value;
+  const catName=document.getElementById('ev-cat').value.trim();
   const date=document.getElementById('ev-date').value;
   const time=document.getElementById('ev-time').value;
   const loc=document.getElementById('ev-loc').value.trim();
@@ -471,7 +482,11 @@ function saveEv() {
   const desc=document.getElementById('ev-desc').value.trim();
   const editId=document.getElementById('ev-id').value;
 
-  if(!title||!catId||!date||!time||!loc||!cap||cap<1){toast('Lengkapi semua field wajib (*)','wa');return;}
+  if(!title||!catName||!date||!time||!loc||!cap||cap<1){toast('Lengkapi semua field wajib (*)','wa');return;}
+
+  // Kategori sekarang berupa string bebas: cocokkan (tanpa memandang huruf besar/kecil)
+  // dengan kategori yang sudah ada, atau buat kategori baru secara otomatis.
+  const catId = resolveCatId(catName);
 
   let evs=DB.get('events');
   if (editId) {
